@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>庄家计算器</title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <style>
+        .spacer{
+            margin-top: 100px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/index.html">庄家计算器</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                <a class="nav-link" href="/index.html">线性增长
+                    <span class="sr-only">(current)</span>
+                </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/exponential.html">指数增长</a>
+                </li>
+            </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+        
+        <div class="spacer"></div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon3">初始用户数量</span>
+            </div>
+            <input type="number" class="form-control" id="initNum" aria-describedby="basic-addon3" >
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon3">用户增长指数</span>
+            </div>
+            <input type="number" class="form-control" id="expNum" aria-describedby="basic-addon3" >
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon3">用户平均充值金额</span>
+            </div>
+            <input type="number" class="form-control" id="rechargeValue" aria-describedby="basic-addon3">
+            <div class="input-group-append">
+                <span class="input-group-text">￥</span>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon3">获客成本</span>
+            </div>
+            <input type="number" class="form-control" id="cpa" aria-describedby="basic-addon3">
+            <div class="input-group-append">
+                <span class="input-group-text">￥</span>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon3">返利倍数</span>
+            </div>
+            <input type="number" class="form-control" id="rebateTimes" aria-describedby="basic-addon3">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon3">返利天数</span>
+            </div>
+            <input type="number" class="form-control" id="rebateDays" aria-describedby="basic-addon3">
+        </div>
+
+        <button id="btnSimulate" type="button" class="btn btn-success">模拟</button>
+
+        <hr>
+
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading" id="result" >可运行： 0 天</h4>
+        </div>
+
+    </div>
+
+    </div>
+    <!-- /.container -->
+
+    <script src="./util.js"></script>
+    <script>
+        $().ready(function() {
+            var initNum = $("#initNum");
+            var expNum = $("#expNum");
+            var rechargeValue = $("#rechargeValue");
+            var cpa = $("#cpa");
+            var rebateTimes = $("#rebateTimes");
+            var rebateDays = $("#rebateDays");
+            var result = $("#result");
+
+            $("#btnSimulate").click(function() {
+
+                if (initNum.val() == 0 ){
+                    alert("[初始用户数量] 不能为 0")
+                } else if(expNum.val() == 0){
+                    alert("[用户增长指数] 不能为 0")
+                } else if (rechargeValue.val() == 0){
+                    alert("[用户平均充值金额] 不能为 0")
+                } else if (cpa.val() == 0){
+                    alert("[获客成本] 不能为 0")
+                } else if (rebateTimes.val() == 0){
+                    alert("[返利倍数] 不能为 0")
+                } else if (rebateDays.val() == 0){
+                    alert("[返利天数] 不能为 0")
+                }  
+                else {
+
+                    var dealer = new Dealer(rebateTimes.val(), rebateDays.val(), cpa.val());
+                    var runningDays = 0;
+
+                    do{
+        
+                        var newUserToday = Math.round(Math.pow(initNum.val(), 1 + expNum.val() * runningDays));
+                        runningDays ++;
+
+                        for(var i=0; i< newUserToday; i++) {
+                            dealer.register(new Player(rechargeValue.val()));
+                        }
+
+                        var pay = dealer.expense();
+                        dealer.balance -= pay;
+                        // $('#details tr:last').after('<tr><td>'+ runningDays + '</td><td>'+  pay + '</td><td>' + dealer.balance + '</td></tr>');
+                        console.log('运行：'+ runningDays 
+                        + ' 天，新增用户：'+ newUserToday 
+                        + '，总用户数：' + dealer.players.length 
+                        + '，当日最大提现额（￥）：'+ pay 
+                        + '，债务（￥）' + dealer.debt()
+                        + '，赤字（￥）' + dealer.deficit()
+                        + '，余额（￥）：' + dealer.balance)
+                    } while (dealer.balance > 0 && dealer.players.length <= 1000000)
+
+                    result.html("可运行："+ runningDays + " 天");
+                }
+            })
+        })
+
+    </script>
+  </body>
+</html>
