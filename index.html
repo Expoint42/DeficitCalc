@@ -85,6 +85,13 @@
             <input type="number" class="form-control" id="rebateDays" aria-describedby="basic-addon3">
         </div>
 
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon3">日提现率</span>
+            </div>
+            <input type="number" class="form-control" id="withdrawalRate" aria-describedby="basic-addon3" value="1" min="0" max="1">
+        </div>
+
         <button id="btnSimulate" type="button" class="btn btn-success">模拟</button>
 
         <hr>
@@ -119,6 +126,7 @@
             var cpa = $("#cpa");
             var rebateTimes = $("#rebateTimes");
             var rebateDays = $("#rebateDays");
+            var withdrawalRate = $("#withdrawalRate");
             var result = $("#result");
 
             $("#btnSimulate").click(function() {
@@ -133,9 +141,11 @@
                     alert("[返利倍数] 不能为 0")
                 } else if (rebateDays.val() == 0){
                     alert("[返利天数] 不能为 0")
-                }  
+                } else if (withdrawalRate.val() == 0){
+                    alert("[日提现率] 不能为 0")
+                } 
                 else {
-                    var dealer = new Dealer(rebateTimes.val(), rebateDays.val(), cpa.val());
+                    var dealer = new Dealer(rebateTimes.val(), rebateDays.val(), cpa.val(), withdrawalRate.val());
                     var runningDays = 0;
 
                     do{
@@ -153,13 +163,14 @@
 
                         console.log('运行：'+ runningDays 
                         + ' 天，总用户数：' + dealer.players.length 
-                        + '，当日最大提现额（￥）：'+ pay 
-                        + '，债务（￥）' + dealer.debt()
-                        + '，赤字（￥）' + dealer.deficit()
-                        + '，余额（￥）：' + dealer.balance)
-                    } while (dealer.balance > 0)
+                        + '，当日最大提现额:￥ '+ pay 
+                        + '，债务:￥ ' + dealer.debt()
+                        + '，赤字:￥ ' + dealer.deficit()
+                        + '，余额:￥ ' + dealer.balance)
 
-                    result.html("可运行："+ runningDays + " 天");
+                        result.html("可运行："+ runningDays + " 天");
+                    } while (dealer.balance > 0 && runningDays <= 1095 ) // 3 年为上限
+                    
                 }
             })
         })

@@ -9,10 +9,11 @@
 /*
     Dealer 庄家，关心每天的收入，返利，和余额
 */
-function Dealer(rebateTimes, rebateDays, cpa){
+function Dealer(rebateTimes, rebateDays, cpa, withdrawalRate){
     this.rebateTimes = rebateTimes || 1;  // 返利倍数
     this.rebateDays = rebateDays; // 返利持续天数
     this.dailyRebateRatio = 1.0 / rebateDays; // 日返利比例
+    this.withdrawalRate = withdrawalRate; // 每日提现的比率，银行往往会根据提现率来准备储备金
     this.cpa = cpa || 0; // 获客成本
     this.balance = 0; // 余额
     this.players = []; // 所有的玩家 
@@ -35,7 +36,8 @@ Dealer.prototype.expense = function() {
         } 
     }, this)
 
-    return pay;
+    // 返回实际需要返利给用户的金额
+    return pay * this.withdrawalRate ;
 }
 
 // 债务
@@ -48,7 +50,7 @@ Dealer.prototype.debt = function() {
         } 
     }, this);
 
-    return -1 * temp;
+    return -1 * temp *  this.withdrawalRate;
 }
 
 // 赤字
